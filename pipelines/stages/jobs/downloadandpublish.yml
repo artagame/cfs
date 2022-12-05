@@ -1,0 +1,42 @@
+parameters:
+    name: ''
+    displayName: ''
+    pool: ''
+    continueOnError: ''
+    variableGroup: ''
+    scriptFilePath: ''
+    artifactName: ''
+
+jobs:
+- job: ${{ parameters.name }}  
+  displayName: ${{ parameters.displayName}} 
+  pool: ${{ parameters.pool }}  
+  continueOnError: ${{ parameters.continueOnError}}
+  variables: 
+  - group : ${{ parameters.variableGroup}}
+
+  steps:
+      - checkout: self
+               
+      # Run a PowerShell script
+      - task: PowerShell@2
+        displayName: 'Download Work Item Attachment'
+        inputs:
+          targetType: 'filePath' 
+          filePath: ${{ parameters.scriptFilePath}}
+          arguments: -SubscriptionId $(SubscriptionId) -PAT $(PAT) -MainVgId $(MainVgId) -FileName "$(FileName)"
+          errorActionPreference: 'stop' 
+          warningPreference: 'default' 
+          informationPreference: 'default' 
+          verbosePreference: 'default' 
+          debugPreference: 'default'
+        env:
+          AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Artifact: $(FileName)"
+        inputs:
+          PathtoPublish: '$(Build.SourcesDirectory)\$(FileName)'
+          ArtifactName: ${{ parameters.artifactName}}
+                
+

@@ -1,0 +1,65 @@
+parameters:
+    stage: ''
+    displayName: ''
+    dependsOn: ''
+    condition: ''
+    pool: ''
+    artifactName: ''
+    
+
+
+stages:
+- stage: ${{ parameters.stage}}  
+  displayName: ${{ parameters.displayName}} 
+  dependsOn: ${{ parameters.dependsOn}} 
+  condition: ${{ parameters.condition}} 
+  jobs: 
+
+  - template: jobs/updatevariables.yml
+    parameters: 
+      name: update_variables
+      displayName: 'Update Variable Values'
+      pool: ${{ parameters.pool}}
+      continueOnError: false
+      variableGroup: Trigger
+      scriptFilePath: 'pipelines/automation-scripts/ExcelValuestoVariables.ps1'
+      artifactName: ${{ parameters.artifactName}}
+      
+  - template: jobs/triggerpipeline.yml
+    parameters: 
+      name: trigger_pipeline
+      displayName: 'Trigger Pipeline'
+      pool: ${{ parameters.pool}}
+      continueOnError: false
+      variableGroup: Trigger
+      scriptFilePath: 'pipelines/automation-scripts/TriggerPipeline.ps1'
+      artifactName: ${{ parameters.artifactName}}
+      dependsOn: update_variables      
+
+  - template: jobs/updateworkitem.yml
+    parameters: 
+      name: update_workitem_on_success
+      displayName: 'Update Work Item on Success Triggering the Pipeline'
+      pool: ${{ parameters.pool}}
+      continueOnError: false
+      mainVariableGroup: Main
+      triggerVariableGroup: Trigger
+      scriptFilePath: 'pipelines/automation-scripts/UpdateWorkItem.ps1'
+      artifactName: ${{ parameters.artifactName}}
+      dependsOn: trigger_pipeline
+      workItemComment: "Successfully triggered the pipeline"
+      condition: succeeded()
+
+  - template: jobs/updateworkitem.yml
+    parameters: 
+      name: update_workitem_on_failure
+      displayName: 'Update Work Item on Failure Triggering the Pipeline'
+      pool: ${{ parameters.pool}}
+      continueOnError: false
+      mainVariableGroup: Main
+      triggerVariableGroup: Trigger
+      scriptFilePath: 'pipelines/automation-scripts/UpdateWorkItem.ps1'
+      artifactName: ${{ parameters.artifactName}}
+      dependsOn: trigger_pipeline
+      workItemComment: "Failed to trigger the pipeline"
+      condition: failed()

@@ -1,0 +1,31 @@
+## Format
+name: $(Date:yyyyMMdd)$(Rev:.rr)
+
+# Stage Trigger
+trigger: none
+
+stages:
+
+#Download and Publish Stage
+- template: stages/downloadandpublish-stage.yml 
+  parameters:
+    stage: 'download_and_publish_stage' 
+    displayName: 'Download and Publish Stage' 
+    dependsOn: ''
+    condition: ''
+    pool:
+      vmImage: 'windows-latest'
+    artifactName: excel
+    variableGroup: Trigger
+
+#Trigger Stage
+- template: stages/trigger-stage.yml 
+  parameters:
+    stage: 'trigger_stage' 
+    displayName: 'Trigger Stage' 
+    dependsOn: 'download_and_publish_stage'
+    condition: ''
+    pool:
+      vmImage: 'windows-latest'
+    artifactName: excel
+

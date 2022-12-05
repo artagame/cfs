@@ -1,0 +1,28 @@
+parameters:
+    stage: ''
+    displayName: ''
+    dependsOn: ''
+    condition: ''
+    pool: ''
+    artifactName: ''
+    variableGroup: ''
+    
+
+
+stages:
+- stage: ${{ parameters.stage}}  
+  displayName: ${{ parameters.displayName}} 
+  dependsOn: ${{ parameters.dependsOn}} 
+  condition: ${{ parameters.condition}} 
+  jobs: 
+
+  - template: jobs/downloadandpublish.yml
+    parameters: 
+      name: download_and_publish_excel_file
+      displayName: 'Download and Publish Excel File to Artifacts'
+      pool: ${{ parameters.pool}}
+      continueOnError: false
+      variableGroup: ${{ parameters.variableGroup}}
+      scriptFilePath: 'pipelines/automation-scripts/DownloadWorkItemFile.ps1'
+      artifactName: ${{ parameters.artifactName}}
+      

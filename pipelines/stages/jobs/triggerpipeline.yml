@@ -1,0 +1,36 @@
+parameters:
+    name: ''
+    displayName: ''
+    pool: ''
+    continueOnError: ''
+    variableGroup: ''
+    scriptFilePath: ''
+    dependsOn: ''
+
+jobs:
+- job: ${{ parameters.name }}  
+  displayName: ${{ parameters.displayName}} 
+  pool: ${{ parameters.pool }}  
+  continueOnError: ${{ parameters.continueOnError}}
+  variables: 
+  - group : ${{ parameters.variableGroup}}
+  dependsOn: ${{ parameters.dependsOn}}
+
+  steps:
+      - checkout: self
+
+               
+      # Run a PowerShell script
+      - task: PowerShell@2
+        displayName: 'Trigger Pipeline'
+        inputs:
+          targetType: 'filePath' 
+          filePath: ${{ parameters.scriptFilePath}}
+          arguments: -PipelineId $(MainPipelineId) -PAT $(PAT)
+          errorActionPreference: 'stop' 
+          warningPreference: 'default' 
+          informationPreference: 'default' 
+          verbosePreference: 'default' 
+          debugPreference: 'default'
+                
+

@@ -1,0 +1,41 @@
+parameters:
+    name: ''
+    displayName: ''
+    pool: ''
+    continueOnError: ''
+    variableGroup: ''
+    scriptFilePath: ''
+    artifactName: ''
+
+jobs:
+- job: ${{ parameters.name }}  
+  displayName: ${{ parameters.displayName}} 
+  pool: ${{ parameters.pool }}  
+  continueOnError: ${{ parameters.continueOnError}}
+  variables: 
+  - group : ${{ parameters.variableGroup}}
+
+  steps:
+      - checkout: self
+
+      - download: current
+        artifact: ${{ parameters.artifactName}}
+        displayName: 'Download Artifacts'
+
+               
+      # Run a PowerShell script
+      - task: PowerShell@2
+        displayName: 'Read Excel File and Update Variables'
+        inputs:
+          targetType: 'filePath' 
+          filePath: ${{ parameters.scriptFilePath}}
+          arguments: -ExcelFilePath "$(Pipeline.Workspace)/${{ parameters.artifactName}}/$(FileName)" -SheetName "$(SheetName)" -MainVgId $(MainVgId)
+          errorActionPreference: 'stop' 
+          warningPreference: 'default' 
+          informationPreference: 'default' 
+          verbosePreference: 'default' 
+          debugPreference: 'default'
+        env:
+          AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+                
+
